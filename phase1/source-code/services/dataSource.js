@@ -113,11 +113,19 @@ function toDTO(doc) {
 }
 
 async function getAll() {
-  return [];
+  if (isMongo) {
+    const docs = await ProductModel.find().lean();
+    return docs.map(toDTO);
+  }
+  return inMemory.slice();
 }
 
 async function getById(id) {
-  return null;
+  if (isMongo) {
+    const doc = await ProductModel.findById(id).lean();
+    return toDTO(doc);
+  }
+  return inMemory.find(p => p.id === id) || null;
 }
 
 async function create(payload) {
