@@ -129,19 +129,74 @@ async function getById(id) {
 }
 
 async function create(payload) {
-  return null;
+  if (isMongo) {
+    const doc = await ProductModel.create(payload);
+    return toDTO(doc.toObject());
+  }
+  const item = { id: uuidv4(), ...payload };
+  inMemory.push(item);
+  return item;
 }
 
 async function replace(id, payload) {
-  return null;
+  if (isMongo) {
+    const doc = await ProductModel.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).lean();
+    return toDTO(doc);
+  }
+  const idx = inMemory.findIndex(p => p.id === id);
+  if (idx === -1) return null;
+  const prev = inMemory[idx];
+  // if payload contains imageUrl and prev had a local upload, remove old file
+  if (payload.imageUrl && prev && prev.imageUrl && prev.imageUrl.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, '..', 'public', prev.imageUrl.substring(1));
+    try { await fs.unlink(filePath); } catch (e) { /* ignore */ }
+  }
+  const item = { id, ...payload };
+  inMemory[idx] = item;
+  return item;
 }
 
 async function patch(id, payload) {
-  return null;
+  if (isMongo) {
+    // if updating image, delete previous uploaded file
+    if (payload.imageUrl) {
+      const prevDoc = await ProductModel.findById(id).lean();
+      if (prevDoc && prevDoc.imageUrl && prevDoc.imageUrl.startsWith('/uploads/')) {
+        const filePath = path.join(__dirname, '..', 'public', prevDoc.imageUrl.substring(1));
+        try { await fs.unlink(filePath); } catch (e) { /* ignore */ }
+      }
+    }
+    const doc = await ProductModel.findByIdAndUpdate(id, { $set: payload }, { new: true, runValidators: true }).lean();
+    return toDTO(doc);
+  }
+  const item = inMemory.find(p => p.id === id);
+  if (!item) return null;
+  // handle image replacement: delete old file if needed
+  if (payload.imageUrl && item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, '..', 'public', item.imageUrl.substring(1));
+    try { await fs.unlink(filePath); } catch (e) { /* ignore */ }
+  }
+  Object.assign(item, payload);
+  return item;
 }
 
 async function remove(id) {
-  return null;
+  if (isMongo) {
+    const doc = await ProductModel.findByIdAndDelete(id).lean();
+    if (doc && doc.imageUrl && doc.imageUrl.startsWith('/uploads/')) {
+      const filePath = path.join(__dirname, '..', 'public', doc.imageUrl.substring(1));
+      try { await fs.unlink(filePath); } catch (e) { /* ignore */ }
+    }
+    return toDTO(doc);
+  }
+  const idx = inMemory.findIndex(p => p.id === id);
+  if (idx === -1) return null;
+  const [deleted] = inMemory.splice(idx, 1);
+  if (deleted && deleted.imageUrl && deleted.imageUrl.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, '..', 'public', deleted.imageUrl.substring(1));
+    try { await fs.unlink(filePath); } catch (e) { /* ignore */ }
+  }
+  return deleted;
 }
 
 module.exports = {
