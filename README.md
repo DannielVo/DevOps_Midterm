@@ -102,24 +102,24 @@ The repository is organized into multiple phases that reflect the progression of
 DevOps_Midterm/
 │
 ├── phase1/
-│ ├── source-code/
-│ ├── scripts/
-│ ├── docs/
-│ └── README.md
+│   ├── source-code/             # Application source code
+│   ├── scripts/
+│   │   └── setup.sh             # Automation script for environment setup
+│   └── docs/                    # Phase 1 Evidence
 │
 ├── phase2/
-│ ├── deployment-files/
-│ ├── configs/
-│ ├── docs/
-│ └── README.md
+│   ├── nginx/
+│   │   └── reverse-proxy.conf   # Nginx reverse proxy configuration
+│   └── docs/                    # Phase 2 Evidence
 │
 ├── phase3/
-│ ├── docker/
-│ ├── docker-compose.yml
-│ ├── docs/
-│ └── README.md
+│   ├── docker/
+│   │   ├── Dockerfile           # Application container definition
+│   │   ├── docker-compose.yml   # Multi-container orchestration
+│   │   └── .env                 # Environment variables for containers
+│   └── docs/                    # Phase 3 Evidence
 │
-└── README.md
+└── README.md                    # Global project overview
 ```
 
 ### Phase Descriptions
@@ -315,7 +315,14 @@ For production environments, storing uploaded images directly on the server disk
 
 ---
 
-## 13. Project Team
+## 13. Demo & Repository
+
+- GitHub Repository: https://github.com/DannielVo/DevOps_Midterm
+- Demo Video: https://youtu.be/HTocKXsjarw
+
+---
+
+## 14. Project Team
 
 The following table lists the team members and their corresponding GitHub usernames.  
 This information is provided so that commit histories in the repository can be clearly mapped to the respective students.
